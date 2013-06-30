@@ -8,13 +8,29 @@ angular.module('keycombo', [] )
       require: '?ngModel',
       link: function (scope, element, attrs, ngModel) {
         // TODO: Capture mac cmd/win keys between browsers
+        // TODO: Handle key sequences in addition to combinations
         var keyCombo = 'ctrl+a',
+        modifiers = {16: 16, 17: 17, 18: 18},
         keyMapping = {
           16: 'shift',
           17: 'ctrl',
           18: 'alt',
           32: 'space',
-          91: 'win'
+          37: 'left',
+          38: 'up',
+          39: 'right',
+          40: 'down',
+          91: 'win',
+          186: ';',
+          187: '=',
+          188: ',',
+          189: '-',
+          191: '/',
+          192: '`',
+          219: '[',
+          220: '\\',
+          221: ']',
+          222: '\''
         },
         keysDown = {};
 
@@ -44,7 +60,6 @@ angular.module('keycombo', [] )
           return getKeysDown().sort(sortByLength).join('+');
         }
 
-
         function updateModel (newVal) {
           if(ngModel){
             ngModel.$setViewValue(newVal);
@@ -52,14 +67,17 @@ angular.module('keycombo', [] )
         }
 
         element.bind('keydown', function (e) {
-          if(!(e.keyCode in keyMapping)) {
+          if(!(e.keyCode in modifiers)) {
             element.val('');
           }
           keysDown[e.keyCode] = true;
         });
 
+        // Checking to make sure keys are not in modifiers so when
+        // the keyup event for them happens they don't change the
+        // combination in the input element
         element.bind('keyup', function (e) {
-          if(!(e.keyCode in keyMapping)) {
+          if(!(e.keyCode in modifiers)) {
             keyCombo = makeStringFromKeysDown();
             updateModel(keyCombo);
             element.val(keyCombo);
